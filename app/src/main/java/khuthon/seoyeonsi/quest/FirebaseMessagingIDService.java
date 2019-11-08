@@ -61,7 +61,7 @@ public class FirebaseMessagingIDService extends FirebaseMessagingService {
 
             NotificationCompat.Builder notificationBuilder =
                     new NotificationCompat.Builder(this, channel)
-                            .setSmallIcon(R.mipmap.ic_launcher_round)
+                            .setSmallIcon(R.mipmap.ic_launcher_quest)
                             .setContentTitle(title)
                             .setContentText(message)
                             .setChannelId(channel)
@@ -78,7 +78,7 @@ public class FirebaseMessagingIDService extends FirebaseMessagingService {
         } else {
             NotificationCompat.Builder notificationBuilder =
                     new NotificationCompat.Builder(this, "")
-                            .setSmallIcon(R.mipmap.ic_launcher_round)
+                            .setSmallIcon(R.mipmap.ic_launcher_quest)
                             .setContentTitle(title)
                             .setContentText(message)
                             .setAutoCancel(true)
