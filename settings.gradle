@@ -1,0 +1,2 @@
+include ':app'
+rootProject.name='퀘스트 중인 모험가'
