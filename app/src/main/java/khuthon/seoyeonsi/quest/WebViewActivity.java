@@ -4,6 +4,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Address;
@@ -12,6 +13,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
@@ -35,12 +38,16 @@ public class WebViewActivity extends AppCompatActivity {
 
     private static final String TAG = "WebViewActivity";
 
+
+    final String locationSendUrl = "https://front.seoyeonsi.bu.to/quest_get.php";
+
     Button button;
     private GpsTracker gpsTracker;
 
     // WebView Variables
     private WebView webView;
-    private String url = "http://seoyeonsi.bu.to/test.html";
+    private String url = "https://front.seoyeonsi.bu.to/quest_get.php";
+    // private String url = "https://www.naver.com";
 
 
     // WebView File Upload Variables
@@ -49,6 +56,7 @@ public class WebViewActivity extends AppCompatActivity {
     private String mCameraPhotoPath;
     private static final String TYPE_IMAGE = "image/*";
     private static final int INPUT_FILE_REQUEST_CODE = 1;
+    public MessageHandler messageHandler = new MessageHandler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,22 +67,53 @@ public class WebViewActivity extends AppCompatActivity {
 
         // 아래부터 WebView 처리
         webView = (WebView) findViewById(R.id.webView);
+
+        Log.d(TAG, webView.toString());
+
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
 
         webView.setWebViewClient(new WebViewClient() {
-            /*@Override
+            /*
+            @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 view.loadUrl(url);
+
+                final String need_url = "https://front.seoyeonsi.bu.to/quest_get.php";
+                if (need_url.equalsIgnoreCase(url)) {
+                    gpsTracker = new GpsTracker(WebViewActivity.this);
+
+                    double latitude = gpsTracker.getLatitude();
+                    double longitude = gpsTracker.getLongitude();
+
+                    String address = getCurrentAddress(latitude, longitude);
+
+
+
+                    Toast.makeText(WebViewActivity.this, "주소\n" + address +
+                            "\n현재위치\n위도 " + latitude + "\n경도 " + longitude, Toast.LENGTH_LONG).show();
+
+
+
+                    String script = "javascripot:change_location(" + latitude + ", " + longitude + ", " + address + ")";
+                    view.loadUrl(script);
+
+                }
+
+                Log.d(TAG, url);
+
                 return true;
-            }*/
+            }
+
+             */
 
             @Override
             public void onPageFinished(WebView view, String url) {
 
                 // **** Example : 네이티브와 웹뷰 간 통신 스크립트 이용 ****
                 // 여기서 WebView의 데이터를 가져오는 작업을 한다.
-                if (url.equals(url)) {
+
+                /*if (url.equals(url)) {
                     String keyword = "Temp";
 
                     String script = "javascript:function afterLoad() {"
@@ -83,8 +122,11 @@ public class WebViewActivity extends AppCompatActivity {
                             + "afterLoad();";
 
                     view.loadUrl(script);
-                }
+                }*/
 
+                final String need_url = "https://front.seoyeonsi.bu.to/quest_get.php";
+
+                Log.d(TAG, "현재 URL : " + url);
 
             }
         });
@@ -194,13 +236,8 @@ public class WebViewActivity extends AppCompatActivity {
             }
         });
 
-        webView.addJavascriptInterface(new Object() {
-            @JavascriptInterface
-            public void justDoIt(String keyword) {
-                Toast.makeText(WebViewActivity.this, "Keyword is " + keyword,
-                        Toast.LENGTH_LONG).show();
-            }
-        }, "Zeany");
+
+        webView.addJavascriptInterface(new WebAppInterface(this), "nativeApp");
 
         webView.loadUrl(url);
 
@@ -328,5 +365,52 @@ public class WebViewActivity extends AppCompatActivity {
 
         Address address = addresses.get(0);
         return address.getAddressLine(0).toString() + "\n";
+    }
+
+    public class WebAppInterface {
+        Context mContext;
+
+        WebAppInterface(Context c) {
+            mContext = c;
+        }
+
+        @JavascriptInterface
+        public void onLoad() {
+            gpsTracker = new GpsTracker(WebViewActivity.this);
+
+            double latitude = gpsTracker.getLatitude();
+            double longitude = gpsTracker.getLongitude();
+
+            String address = getCurrentAddress(latitude, longitude);
+
+
+
+            //Toast.makeText(WebViewActivity.this, "주소\n" + address +
+             //       "\n현재위치\n위도 " + latitude + "\n경도 " + longitude, Toast.LENGTH_LONG).show();
+
+            String script = "javascript:change_location(" + latitude + ", " + longitude + ", '" + address + "');";
+
+            Message message = messageHandler.obtainMessage();
+            message.what = 1;
+            message.obj = script;
+
+            messageHandler.sendMessage(message);
+
+            Log.d(TAG, "현재 웹뷰의 url : " + webView.getUrl());
+            /*
+            if (webView.getUrl().equalsIgnoreCase(locationSendUrl)) {
+
+
+                Log.d(TAG, "IF문 안으로 들어옴");
+            }*/
+        }
+    }
+
+    class MessageHandler extends Handler {
+        public void handleMessage(Message msg) {
+            webView.loadUrl(msg.obj.toString());
+            Log.d(TAG, "obj : " + msg.obj.toString());
+            Log.d(TAG, "MessageHandler");
+        }
     }
 }
