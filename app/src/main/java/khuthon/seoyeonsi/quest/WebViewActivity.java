@@ -46,7 +46,7 @@ public class WebViewActivity extends AppCompatActivity {
 
     // WebView Variables
     private WebView webView;
-    private String url = "https://front.seoyeonsi.bu.to/quest_get.php";
+    private String url = "https://front.seoyeonsi.bu.to/login.php";
     // private String url = "https://www.naver.com";
 
 
@@ -123,8 +123,6 @@ public class WebViewActivity extends AppCompatActivity {
 
                     view.loadUrl(script);
                 }*/
-
-                final String need_url = "https://front.seoyeonsi.bu.to/quest_get.php";
 
                 Log.d(TAG, "현재 URL : " + url);
 
@@ -382,12 +380,6 @@ public class WebViewActivity extends AppCompatActivity {
             double longitude = gpsTracker.getLongitude();
 
             String address = getCurrentAddress(latitude, longitude);
-
-
-
-            //Toast.makeText(WebViewActivity.this, "주소\n" + address +
-             //       "\n현재위치\n위도 " + latitude + "\n경도 " + longitude, Toast.LENGTH_LONG).show();
-
             String script = "javascript:change_location(" + latitude + ", " + longitude + ", '" + address + "');";
 
             Message message = messageHandler.obtainMessage();
@@ -397,12 +389,6 @@ public class WebViewActivity extends AppCompatActivity {
             messageHandler.sendMessage(message);
 
             Log.d(TAG, "현재 웹뷰의 url : " + webView.getUrl());
-            /*
-            if (webView.getUrl().equalsIgnoreCase(locationSendUrl)) {
-
-
-                Log.d(TAG, "IF문 안으로 들어옴");
-            }*/
         }
     }
 
